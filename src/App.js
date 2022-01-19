@@ -27,6 +27,9 @@ function App() {
             <hr style={{margin: '15px 0'}}/>
             <MySelect
                 defaultValue={'Сортировка по'}
+                options={[
+                    {name: 'NAme', value: 'asas'}
+                ]}
             />
             <select>
                 <option value="value1">По названию</option>
