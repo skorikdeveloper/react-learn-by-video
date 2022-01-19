@@ -28,7 +28,7 @@ function App() {
             <MySelect
                 defaultValue={'Сортировка по'}
                 options={[
-                    {name: 'NAme', value: 'asas'}
+                    {name: 'asdsa', value: '123123'}
                 ]}
             />
             <select>
