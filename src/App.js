@@ -6,6 +6,8 @@ import MySelect from "./components/UI/select/MySelect";
 import MyInput from "./components/UI/input/MyInput";
 import PostItem from "./components/PostItem";
 import PostFilter from "./components/PostFilter";
+import MyModal from "./components/UI/modal/MyModal";
+import MyButton from "./components/UI/button/MyButton";
 
 function App() {
     const [posts, setPosts] = useState([
@@ -14,6 +16,7 @@ function App() {
         {id:3, title: 'Phyton', body: 'Zetindex'},
     ]);
     const [filter, setFilter] = useState({sort: '', query: ''})
+    const [modal, setModal] = useState(false)
 
     // useMemo кеширует данные пока состояние-зависимости не изменятся
     const sortedPosts = useMemo(() => {
@@ -33,6 +36,7 @@ function App() {
 
     const createPost = (newPost) => {
         setPosts([...posts, newPost])
+        setModal(false)
     }
 
     // получаем post из дочернего компонента
@@ -42,17 +46,15 @@ function App() {
 
     return (
       <div className="App">
-        <PostForm create={createPost}/>
-        <hr style={{margin: '15px 0'}}/>
+        <MyButton style={{marginTop: 30}} onClick={() => setModal(true)}>
+            Создать пост
+        </MyButton>
+        <MyModal visible={modal} setVisible={setModal}>
+            <PostForm create={createPost}/>
+        </MyModal>
+        {/*<hr style={{margin: '15px 0'}}/>*/}
         <PostFilter filter={filter} setFilter={setFilter}/>
-        {sortedAndSearchedPosts.length !== 0
-          ?
-          <PostList posts={sortedAndSearchedPosts} title={"Список постов 1"} remove={removePost}/>
-          :
-          <h1 style={{textAlign: 'center'}}>
-              Посты не найдены
-          </h1>
-        }
+        <PostList posts={sortedAndSearchedPosts} title={"Список постов 1"} remove={removePost}/>
       </div>
     );
 }
