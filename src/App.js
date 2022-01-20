@@ -1,45 +1,35 @@
 import './styles/App.css';
-import {useMemo, useState} from "react";
+import {useEffect, useState} from "react";
 import PostList from "./components/PostList";
 import PostForm from "./components/PostForm";
-import MySelect from "./components/UI/select/MySelect";
-import MyInput from "./components/UI/input/MyInput";
-import PostItem from "./components/PostItem";
 import PostFilter from "./components/PostFilter";
 import MyModal from "./components/UI/modal/MyModal";
 import MyButton from "./components/UI/button/MyButton";
+import {usePosts} from "./hooks/usePosts";
+import axios from "axios";
+import PostService from "./API/PostService";
+import Loader from "./components/UI/loader/Loader";
+import {useFetching} from "./hooks/useFetching";
 
 function App() {
-    const [posts, setPosts] = useState([
-        {id:1, title: 'Javascript', body: 'Description'},
-        {id:2, title: 'Azbuka', body: 'Vasyya'},
-        {id:3, title: 'Phyton', body: 'Zetindex'},
-    ]);
+    const [posts, setPosts] = useState([]);
     const [filter, setFilter] = useState({sort: '', query: ''})
     const [modal, setModal] = useState(false)
+    const sortedAndSearchedPosts = usePosts(posts, filter.sort, filter.query)
+    const [fetchPosts, isPostsLoading, postError] = useFetching(async () => {
+        const posts = await PostService.getAll()
+        setPosts(posts)
+    })
 
-    // useMemo кеширует данные пока состояние-зависимости не изменятся
-    const sortedPosts = useMemo(() => {
-        if(filter.sort) {
-            return [...posts].sort((a, b) => a[filter.sort].localeCompare(b[filter.sort]))
-        }
-
-        return posts
-    }, [filter.sort, posts]);
-
-    const sortedAndSearchedPosts = useMemo(() => {
-        if(filter.query) {
-            return sortedPosts.filter(post => post.title.toLowerCase().includes(filter.query.toLowerCase()))
-        }
-        return sortedPosts
-    }, [filter.query, sortedPosts])
+    useEffect(() => {
+        fetchPosts()
+    }, [])
 
     const createPost = (newPost) => {
         setPosts([...posts, newPost])
         setModal(false)
     }
 
-    // получаем post из дочернего компонента
     const removePost = (post) => {
         setPosts(posts.filter(p => p.id !== post.id))
     }
@@ -52,9 +42,15 @@ function App() {
         <MyModal visible={modal} setVisible={setModal}>
             <PostForm create={createPost}/>
         </MyModal>
-        {/*<hr style={{margin: '15px 0'}}/>*/}
+        <hr style={{margin: '15px 0'}}/>
         <PostFilter filter={filter} setFilter={setFilter}/>
-        <PostList posts={sortedAndSearchedPosts} title={"Список постов 1"} remove={removePost}/>
+          {postError &&
+              <h1>Произошла ошибка: ${postError}</h1>
+          }
+          {isPostsLoading
+              ? <div style={{display: 'flex', justifyContent: 'center', marginTop: '50px'}}><Loader/></div>
+              : <PostList posts={sortedAndSearchedPosts} title={"Список постов 1"} remove={removePost}/>
+          }
       </div>
     );
 }
