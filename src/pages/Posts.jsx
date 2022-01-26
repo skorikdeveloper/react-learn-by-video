@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import {useEffect, useRef, useState} from "react";
 import PostList from "../components/PostList";
 import PostForm from "../components/PostForm";
 import PostFilter from "../components/PostFilter";
@@ -19,13 +19,25 @@ function Posts() {
     const [totalPages, setTotalPages] = useState(0)
     const [limit, setLimit] = useState(10)
     const [page, setPage] = useState(1)
+    const lastElement = useRef()
+    const observer = useRef()
+    // console.log(lastElement);
+    console.log(observer);
 
     const [fetchPosts, isPostsLoading, postError] = useFetching(async () => {
         const response = await PostService.getAll(limit, page)
-        setPosts(response.data)
+        setPosts([...posts, ...response.data])
         const totalCount = response.headers['x-total-count']
         setTotalPages(getPagesCount(totalCount, limit))
     })
+
+    useEffect(() => {
+        var callback = function(entries, observer) {
+            console.log(entries);
+        };
+        observer.current = new IntersectionObserver(callback);
+        observer.current.observe(lastElement.current)
+    }, [])
 
     useEffect(() => {
         fetchPosts()
@@ -42,7 +54,6 @@ function Posts() {
 
     const changePage = (page) => {
         setPage(page)
-        // fetchPosts()
     }
 
     return (
@@ -58,9 +69,12 @@ function Posts() {
             {postError &&
                 <h1>Произошла ошибка: ${postError}</h1>
             }
-            {isPostsLoading
-                ? <div style={{display: 'flex', justifyContent: 'center', marginTop: '50px'}}><Loader/></div>
-                : <PostList posts={sortedAndSearchedPosts} title={"Список постов 1"} remove={removePost}/>
+
+            <PostList posts={sortedAndSearchedPosts} title={"Список постов 1"} remove={removePost}/>
+            <div ref={lastElement} style={{height: 20, background: 'red'}}/>
+
+            {isPostsLoading &&
+                <div style={{display: 'flex', justifyContent: 'center', marginTop: '50px'}}><Loader/></div>
             }
 
             <Pagination

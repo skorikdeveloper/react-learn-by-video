@@ -8,6 +8,7 @@ const Navbar = () => {
     const logout = event => {
         event.preventDefault()
         setIsAuth(false)
+        localStorage.removeItem('auth')
     }
 
     return (
